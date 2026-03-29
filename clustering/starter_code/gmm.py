@@ -21,7 +21,7 @@ def load_data():
 
   return data, val_data
 
-def truncated_normal(size, threshold=1):
+def truncated_normal(size, threshold=1): #only keep values between -1 and 1
   # This function generates a truncated normal distribution
   values = truncnorm.rvs(-threshold, threshold, size=size)
   return values
@@ -83,8 +83,8 @@ def train_gmm(train_data, test_data, k = 5, epoch=1000, init_kmeans=False):
 
     #TODO: Compute log likelihood per cluster and marginal likelihood for the whole mixture. 
     # Fill in the blank (2lines below) of the functions log_GaussPDF and log_posterior
-    log_PDF = log_GaussPDF() #fill in here
-    _, log_marginal = log_posterior() #fill in here
+    log_PDF = log_GaussPDF(X_train, mu, sigma) #fill in here
+    _, log_marginal = log_posterior(log_PDF, logpi) #fill in here
 
     #Compute the marginal mean.
     loss = -log_marginal.mean()
@@ -99,8 +99,8 @@ def train_gmm(train_data, test_data, k = 5, epoch=1000, init_kmeans=False):
 
   #TODO: Evaluate on Test Set. Fill in the blank of the functions
   # log_GaussPDF and log_posterior
-  log_PDF = log_GaussPDF() #fill in here
-  log_joint_test, log_marginal = log_posterior() #fill in here
+  log_PDF = log_GaussPDF(X_test, mu, sigma) #fill in here
+  log_joint_test, log_marginal = log_posterior(log_PDF, logpi) #fill in here
   test_loss = -log_marginal.mean()
 
   #Conver to numpy:
@@ -125,3 +125,10 @@ def test_GMM(k = 5, init_kmeans=False):
     tmp = new_X[new_X[...,-1] == i]
     plt.scatter(tmp[:,0], tmp[:,1], c=color_list[i])
   plt.scatter(mu[:,0], mu[:,1], s=300, c='r', marker = '+')
+#   plt.title('GMM Clustering')
+#   print("GMM test loss:", test_loss)
+#   plt.show()
+#   return test_loss, pi, mu, sigma
+
+# if __name__ == "__main__":
+#   test_GMM(k=5, init_kmeans=False)
