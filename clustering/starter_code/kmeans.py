@@ -26,19 +26,20 @@ def train_kmean_torch(train_data, k = 5, lr=0.1, epoch=150):
   X_train = torch.from_numpy(train_data)
 
   #TODO: define the Adam Optimizer
-  optimizer = 
+  optimizer = torch.optim.Adam([m], lr=lr)
 
   for epoch in range(epoch):
     list_mse = []
     for i in range(k):
       #TODO: fill in the append function
-      list_mse.append()  
+      distance = torch.sum((X_train - m[i])**2, dim=1)  
+      list_mse.append(distance)  
 
     #TODO: calculate the loss function. Complete the 
     #below 3 lines. 
-    list_mse_torch = #Stacks the list_mse[i]
-    list_mse_torch_min,_ = #Calculate the min 
-    L_train = #Calculate the mean loss
+    list_mse_torch = torch.stack(list_mse)
+    list_mse_torch_min,_ = torch.min(list_mse_torch, dim=0)
+    L_train = torch.mean(list_mse_torch_min)
 
     #Update the model using optimizer and L_train
     optimizer.zero_grad()
@@ -53,6 +54,20 @@ def train_kmean_torch(train_data, k = 5, lr=0.1, epoch=150):
 def evaluate(test_data, m):
   # TODO: complete this function.
 
+  #initate the data here
+  num_cluster = len(m)
+  N, d = test_data.shape
+  L_k = np.zeros((N, num_cluster))
+
+  #find the distance between each data point and cluster center
+  for k in range(num_cluster):
+    L_k[:,k] = np.sum((test_data - m[k])**2, axis=1)
+    
+  min_L_k = np.min(L_k, axis=1)
+
+  return np.mean(min_L_k)
+
+
 def get_association(test_data, m):
   #This function returns the list of cluster associated for 
   # each data points.
@@ -63,7 +78,7 @@ def get_association(test_data, m):
   for k in range(num_cluster):
     #TODO: calculate the distance per cluster
     #by fill in the blank
-    L_k[:,k] = 
+    L_k[:,k] = np.sum((test_data - m[k])**2, axis=1)
   
   #Assign to the nearest cluster.
   index = np.argmin(L_k, axis = -1)
@@ -84,9 +99,11 @@ def test_pytorch(train_data, test_data, k=5):
 
 def test_sckitlearn(train_data, test_data, k=5):
   #TODO: Create the KMeans object and fit the model using train_data
-  # Use k cluster, 5000 maximum iterations and "auto" algorithm.
+  # Use k cluster, 5000 maximum iterations and "lloyd" algorithm.
   # Fill in the line below.
-  kmeans = 
+
+  #due to latest version of stklearn, the default algorithm is "lloyd" instead of "auto"
+  kmeans = KMeans(n_clusters=k, max_iter=5000, algorithm='lloyd').fit(train_data)
   
   #Association and visualization step
   index = kmeans.predict(test_data)
@@ -100,5 +117,5 @@ def test_sckitlearn(train_data, test_data, k=5):
     plt.scatter(tmp[:,0], tmp[:,1], c=color_list[i])
 
 train_data, test_data = load_data()
-test_pytorch(train_data, test_data, k=5)
+test_pytorch(train_data, test_data, k=1)
 test_sckitlearn(train_data, test_data, k=5)
